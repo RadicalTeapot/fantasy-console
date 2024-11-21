@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title></title>
+        <!-- <link href="css/style.css" rel="stylesheet"> -->
+        <script type="module" src="src/main.js"></script>
+        <script>
+            const socket = new WebSocket('ws://localhost:8080/');
+
+            socket.addEventListener('open', () => {
+                console.log('Connected to WebSocket server');
+            });
+
+            socket.addEventListener('message', (event) => {
+                console.log('Received message:', event.data);
+                if (event.data === 'reload') {
+                    location.reload();
+                }
+            });
+
+            socket.addEventListener('close', () => {
+                console.log('Disconnected from WebSocket server');
+            });
+        </script>
+    </head>
+    <body>
+
+    </body>
+</html>

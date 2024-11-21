@@ -1,0 +1,15 @@
+export const registers = {
+    PC: 0x00,
+    SP: 0x02,
+
+    ACC: 0x10,
+    R1: 0x12,
+    R2: 0x14,
+    R3: 0x16,
+    R4: 0x18,
+    R5: 0x1a,
+    R6: 0x1c,
+    R7: 0x1e,
+
+    _SIZE: 0x20,
+};
