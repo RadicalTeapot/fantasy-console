@@ -1,5 +1,5 @@
 import assert from "assert";
-import { opcodes, instructions } from "./instructions.js";
+import { opcodes } from "./instructions.js";
 
 export const InstructionBuilder = Object.assign({}, {
     setOpCode: function(opcode) {
@@ -11,22 +11,40 @@ export const InstructionBuilder = Object.assign({}, {
         this.CPU = CPU;
         return this;
     },
+    setInstructions: function(instructions) {
+        this.instructions = instructions;
+        return this;
+    },
     build: function() {
+        let instructionArgs = [];
         switch (this.opcode) {
             case opcodes.LOAD_MEM_REG:
-                {
-                    const address = this.CPU.fetch16();
-                    const reg = this.CPU.fetch();
-                    return () => instructions.LOAD_MEM_REG(address, reg, this.CPU.memory, this.CPU.registers);
-                }
+            case opcodes.LOAD_REG_MEM:
+            case opcodes.LOADW_MEM_REG:
+            case opcodes.LOADW_REG_MEM:
+                instructionArgs = [this.CPU.fetch(), this.CPU.fetch(), this.CPU.memory, this.CPU.registers];
+                break;
             case opcodes.LOAD_LIT_REG:
-                {
-                    const value = this.CPU.fetch16();
-                    const reg = this.CPU.fetch();
-                    return () => instructions.LOAD_LIT_REG(value, reg, this.CPU.registers);
-                }
+            case opcodes.LOAD_REG_REG:
+            case opcodes.LOADW_REG_REG:
+                instructionArgs = [this.CPU.fetch(), this.CPU.fetch(), this.CPU.registers];
+                break;
+            case opcodes.LOAD_LIT_MEM:
+            case opcodes.LOAD_MEM_MEM:
+            case opcodes.LOADW_MEM_MEM:
+                instructionArgs = [this.CPU.fetch(), this.CPU.fetch(), this.CPU.memory];
+                break;
+            case opcodes.LOADW_LIT_MEM:
+                instructionArgs = [this.CPU.fetch16(), this.CPU.fetch(), this.CPU.memory];
+                break;
+            case opcodes.LOADW_LIT_REG:
+                instructionArgs = [this.CPU.fetch16(), this.CPU.fetch(), this.CPU.registers];
+                break;
             default:
-                { return () => instructions.NOP(); }
+                this.opcode = opcodes.NOP;
+                instructionArgs = [];
+                break;
         }
+        return () => this.instructions[this.opcode](...instructionArgs);
     }
 });
