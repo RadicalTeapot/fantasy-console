@@ -6,9 +6,10 @@
   "scripts": {
     "start": "node src/server.js",
     "reload": "node src/trigger-refresh.js",
-    "test": "npm run test:memory",
+    "tests": "npm run test:memory && npm run test:CPU && npm run test:instructions",
     "test:memory": "node tests/memory/memory-test.js",
-    "test:CPU": "node tests/CPU/CPU-test.js"
+    "test:CPU": "node tests/CPU/CPU-test.js",
+    "test:instructions": "node tests/CPU/instructions-test.js"
   },
   "keywords": [],
   "author": "",

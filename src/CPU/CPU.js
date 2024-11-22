@@ -1,29 +1,11 @@
-import assert from "assert";
 import { Memory } from "../memory/memory.js";
 import { registers } from "./registers.js";
-import { instructions } from "./instructions.js";
-
-function instructionsMapper() {
-    const map = Object.keys(instructions)
-        .map(key => [key, NOP])
-        .reduce((a, b) => Object.assign(a, b), {});
-    map[instructions.LOAD_MEM_REG] = LOAD_MEM_REG;
-    return map;
-}
-
-function NOP(CPU) {}
-function LOAD_MEM_REG(CPU) {
-    const address = CPU.fetch16();
-    const reg = CPU.fetch();
-    const value = CPU.memory.read16(address);
-    CPU.registers.write16(reg, value);
-}
+import { InstructionBuilder } from "./instruction-builder.js";
 
 export function CPU(memory) {
     this.memory = memory;
     this.registers = new Memory(registers._SIZE);
     this.registers.write16(registers.SP, memory.size - 1);
-    this.instructions = instructionsMapper();
 }
 
 CPU.prototype.fetch = function () {
@@ -44,9 +26,9 @@ CPU.prototype.fetch16 = function () {
 }
 
 CPU.prototype.execute = function () {
-    const instruction = this.fetch();
-    assert(instruction in this.instructions, `Unknown instruction: ${instruction}`);
-    this.instructions[instruction](this);
+    const opcode = this.fetch();
+    const instruction = InstructionBuilder.setOpCode(opcode).setCPU(this).build();
+    instruction();
 }
 
 CPU.prototype.dumpRegisters = function () {
@@ -55,3 +37,4 @@ CPU.prototype.dumpRegisters = function () {
         .map(key => `${key}: 0x${this.registers.read16(registers[key]).toString(16).padStart(4, "0")}`)
         .join("\n");
 }
+
