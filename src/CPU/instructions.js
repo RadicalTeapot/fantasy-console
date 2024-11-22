@@ -116,4 +116,4 @@ const data = {
 };
 
 export const opcodes = Object.keys(data).reduce((acc, key) => Object.assign(acc, {[key]: data[key].opcode}), {});
-export const instructions = Object.keys(data).reduce((acc, key) => Object.assign(acc, {[key]: data[key].instruction}), {});
+export const instructions = Object.keys(data).reduce((acc, key) => Object.assign(acc, {[data[key].opcode]: data[key].instruction}), {});
