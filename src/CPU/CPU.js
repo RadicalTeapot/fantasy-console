@@ -1,9 +1,11 @@
 import { Memory } from "../memory/memory.js";
 import { registers } from "./registers.js";
-import { InstructionBuilder } from "./instruction-builder.js";
+import { opcodes } from "./instructions.js";
 
-export function CPU(memory) {
+export function CPU(memory, instructionFactory) {
     this.memory = memory;
+    this.instructionFactory = instructionFactory;
+
     this.registers = new Memory(registers._SIZE);
     this.registers.write16(registers.SP, memory.size - 1);
 }
@@ -25,10 +27,42 @@ CPU.prototype.fetch16 = function () {
     return instruction;
 }
 
+CPU.prototype.getNextInstruction = function(opcode) {
+    let instructionArgs = [];
+    switch (opcode) {
+        case opcodes.LOAD_MEM_REG:
+        case opcodes.LOAD_REG_MEM:
+        case opcodes.LOADW_MEM_REG:
+        case opcodes.LOADW_REG_MEM:
+            instructionArgs = [this.fetch(), this.fetch(), this.memory, this.registers];
+            break;
+        case opcodes.LOAD_LIT_REG:
+        case opcodes.LOAD_REG_REG:
+        case opcodes.LOADW_REG_REG:
+            instructionArgs = [this.fetch(), this.fetch(), this.registers];
+            break;
+        case opcodes.LOAD_LIT_MEM:
+        case opcodes.LOAD_MEM_MEM:
+        case opcodes.LOADW_MEM_MEM:
+            instructionArgs = [this.fetch(), this.fetch(), this.memory];
+            break;
+        case opcodes.LOADW_LIT_MEM:
+            instructionArgs = [this.fetch16(), this.fetch(), this.memory];
+            break;
+        case opcodes.LOADW_LIT_REG:
+            instructionArgs = [this.fetch16(), this.fetch(), this.registers];
+            break;
+        default:
+            opcode = opcodes.NOP;
+            instructionArgs = [];
+            break;
+    }
+    return this.instructionFactory.createInstruction(opcode, ...instructionArgs);
+}
+
 CPU.prototype.execute = function () {
     const opcode = this.fetch();
-    const instruction = InstructionBuilder.setOpCode(opcode).setCPU(this).build();
-    instruction();
+    this.getNextInstruction(opcode).execute();
 }
 
 CPU.prototype.dumpRegisters = function () {

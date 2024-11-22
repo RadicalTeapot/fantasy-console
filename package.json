@@ -3,15 +3,6 @@
   "version": "1.0.0",
   "main": "src/server.js",
   "type": "module",
-  "scripts": {
-    "start": "node src/server.js",
-    "reload": "node src/trigger-refresh.js",
-    "tests": "npm run test:memory && npm run test:CPU && npm run test:instructions && npm run test:instruction_builder",
-    "test:memory": "node tests/memory/memory-test.js",
-    "test:CPU": "node tests/CPU/CPU-test.js",
-    "test:instruction_builder": "node tests/CPU/instruction-builder-test.js",
-    "test:instructions": "node tests/CPU/instructions-test.js"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
