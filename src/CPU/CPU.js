@@ -2,11 +2,11 @@ import { Memory } from "../memory/memory.js";
 import { registers } from "./registers.js";
 import { opcodes } from "./instructions.js";
 
-export function CPU(memory, instructionFactory) {
+export function CPU(memory, registersMemory, instructionFactory) {
     this.memory = memory;
+    this.registers = registersMemory;
     this.instructionFactory = instructionFactory;
 
-    this.registers = new Memory(registers._SIZE);
     this.registers.write16(registers.SP, memory.size - 1);
 }
 
@@ -34,30 +34,24 @@ CPU.prototype.getNextInstruction = function(opcode) {
         case opcodes.LOAD_REG_MEM:
         case opcodes.LOADW_MEM_REG:
         case opcodes.LOADW_REG_MEM:
-            instructionArgs = [this.fetch(), this.fetch(), this.memory, this.registers];
-            break;
         case opcodes.LOAD_LIT_REG:
         case opcodes.LOAD_REG_REG:
         case opcodes.LOADW_REG_REG:
-            instructionArgs = [this.fetch(), this.fetch(), this.registers];
-            break;
         case opcodes.LOAD_LIT_MEM:
         case opcodes.LOAD_MEM_MEM:
         case opcodes.LOADW_MEM_MEM:
-            instructionArgs = [this.fetch(), this.fetch(), this.memory];
+            instructionArgs = [this.fetch(), this.fetch()];
             break;
         case opcodes.LOADW_LIT_MEM:
-            instructionArgs = [this.fetch16(), this.fetch(), this.memory];
-            break;
         case opcodes.LOADW_LIT_REG:
-            instructionArgs = [this.fetch16(), this.fetch(), this.registers];
+            instructionArgs = [this.fetch16(), this.fetch()];
             break;
         default:
             opcode = opcodes.NOP;
             instructionArgs = [];
             break;
     }
-    return this.instructionFactory.createInstruction(opcode, ...instructionArgs);
+    return this.instructionFactory.createInstruction(opcode, instructionArgs);
 }
 
 CPU.prototype.execute = function () {
@@ -67,7 +61,6 @@ CPU.prototype.execute = function () {
 
 CPU.prototype.dumpRegisters = function () {
     return Object.keys(registers)
-        .filter(key => key !== "_SIZE")
         .map(key => `${key}: 0x${this.registers.read16(registers[key]).toString(16).padStart(4, "0")}`)
         .join("\n");
 }
