@@ -15,7 +15,7 @@ Object.assign(RegistersFactory.prototype, {
     addRegister: function (size, name) {
         assert(registers.includes(name), `Invalid register name: ${name}`);
         assert(name, "Name not set");
-        assert(size == 1 || size == 2, "Size must be 1 or 2 bytes");
+        assert(size === 1 || size === 2, "Size must be 1 or 2 bytes");
 
         const address = this.addressBuilder.reserveAddress(size, `register ${name}`);
         this.size += size;

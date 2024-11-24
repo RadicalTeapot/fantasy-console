@@ -6,7 +6,6 @@ import { Memory } from "../memory/memory.js";
 import { OPCODES, instructions } from "./instructions.js";
 import { InstructionFactory } from "./instruction-factory.js";
 
-
 export function CPUBuilder() {
     this.pageSize = 0x100;
     this.memoryPages = 0x100;
