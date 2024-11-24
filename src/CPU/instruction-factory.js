@@ -1,9 +1,9 @@
 import assert from "assert";
 import { OPCODES } from "./instructions.js";
 
-export function InstructionFactory(memory, registers, instructions) {
+export function InstructionFactory(memory, registerResolver, instructions) {
     this.memory = memory;
-    this.registers = registers;
+    this.registerResolver = registerResolver;
     this.instructions = instructions;
 }
 Object.assign(InstructionFactory.prototype, {
@@ -14,13 +14,13 @@ Object.assign(InstructionFactory.prototype, {
             case OPCODES.LOAD_REG_MEM:
             case OPCODES.LOADW_MEM_REG:
             case OPCODES.LOADW_REG_MEM:
-                instructionArgs.push(this.memory, this.registers);
+                instructionArgs.push(this.memory, this.registerResolver);
                 break;
             case OPCODES.LOAD_LIT_REG:
             case OPCODES.LOAD_REG_REG:
             case OPCODES.LOADW_REG_REG:
             case OPCODES.LOADW_LIT_REG:
-                instructionArgs.push(this.registers);
+                instructionArgs.push(this.registerResolver);
                 break;
             case OPCODES.LOAD_LIT_MEM:
             case OPCODES.LOAD_MEM_MEM:

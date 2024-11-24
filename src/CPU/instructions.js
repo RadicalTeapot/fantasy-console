@@ -1,17 +1,17 @@
 const data = {
-    LOAD_MEM_REG: {opcode: 0x10, instruction: (memoryAddress, registerAddress, memory, registers) => {
+    LOAD_MEM_REG: {opcode: 0x10, instruction: (memoryAddress, registerAddress, memory, registerResolver) => {
         const value = memory.read8(memoryAddress);
-        registers.writeRegister(registerAddress, value);
+        registerResolver[registerAddress].write(value);
     }},
-    LOAD_LIT_REG: {opcode: 0x11, instruction: (value, registerAddress, registers) => {
-        registers.writeRegister(registerAddress, value);
+    LOAD_LIT_REG: {opcode: 0x11, instruction: (value, registerAddress, registerResolver) => {
+        registerResolver[registerAddress].write(value);
     }},
-    LOAD_REG_REG: {opcode: 0x12, instruction: (sourceRegisterAddress, destRegisterAddress, registers) => {
-        const value = registers.readRegister(sourceRegisterAddress);
-        registers.writeRegister(destRegisterAddress, value);
+    LOAD_REG_REG: {opcode: 0x12, instruction: (sourceRegisterAddress, destRegisterAddress, registerResolver) => {
+        const value = registerResolver[sourceRegisterAddress].read();
+        registerResolver[destRegisterAddress].write(value);
     }},
-    LOAD_REG_MEM: {opcode: 0x13, instruction: (registerAddress, memoryAddress, memory, registers) => {
-        const value = registers.readRegister(registerAddress);
+    LOAD_REG_MEM: {opcode: 0x13, instruction: (registerAddress, memoryAddress, memory, registerResolver) => {
+        const value = registerResolver[registerAddress].read();
         memory.write8(memoryAddress, value);
     }},
     LOAD_LIT_MEM: {opcode: 0x14, instruction: (value, memoryAddress, memory) => {
@@ -21,19 +21,19 @@ const data = {
         const value = memory.read8(sourceMemoryAddress);
         memory.write8(destMemoryAddress, value);
     }},
-    LOADW_MEM_REG: {opcode: 0x16, instruction: (memoryAddress, registerAddress, memory, registers) => {
+    LOADW_MEM_REG: {opcode: 0x16, instruction: (memoryAddress, registerAddress, memory, registerResolver) => {
         const value = memory.read16(memoryAddress);
-        registers.writeRegister(registerAddress, value);
+        registerResolver[registerAddress].write(value);
     }},
-    LOADW_LIT_REG: {opcode: 0x17, instruction: (value, registerAddress, registers) => {
-        registers.writeRegister(registerAddress, value);
+    LOADW_LIT_REG: {opcode: 0x17, instruction: (value, registerAddress, registerResolver) => {
+        registerResolver[registerAddress].write(value);
     }},
-    LOADW_REG_REG: {opcode: 0x18, instruction: (sourceRegisterAddress, destRegisterAddress, registers) => {
-        const value = registers.readRegister(sourceRegisterAddress);
-        registers.writeRegister(destRegisterAddress, value);
+    LOADW_REG_REG: {opcode: 0x18, instruction: (sourceRegisterAddress, destRegisterAddress, registerResolver) => {
+        const value = registerResolver[sourceRegisterAddress].read();
+        registerResolver[destRegisterAddress].write(value);
     }},
-    LOADW_REG_MEM: {opcode: 0x19, instruction: (registerAddress, memoryAddress, memory, registers) => {
-        const value = registers.readRegister(registerAddress);
+    LOADW_REG_MEM: {opcode: 0x19, instruction: (registerAddress, memoryAddress, memory, registerResolver) => {
+        const value = registerResolver[registerAddress].read();
         memory.write16(memoryAddress, value);
     }},
     LOADW_LIT_MEM: {opcode: 0x1a, instruction: (value, memoryAddress, memory) => {
@@ -44,37 +44,37 @@ const data = {
         memory.write16(destMemoryAddress, value);
     }},
 
-    ADD: {opcode: 0x20, instruction: (firstRegisterAddress, secondRegisterAddress, outRegisterAddress, registers) => {
-        const firstValue = registers.read16(firstRegisterAddress);
-        const secondValue = registers.read16(secondRegisterAddress);
+    ADD: {opcode: 0x20, instruction: (firstRegisterAddress, secondRegisterAddress, outRegisterAddress, registerResolver) => {
+        const firstValue = registerResolver[firstRegisterAddress].read();
+        const secondValue = registerResolver[secondRegisterAddress].read();
         // TODO Set flags
-        registers.write16(outRegisterAddress, firstValue + secondValue);
+        registerResolver[outRegisterAddress].write(firstValue + secondValue);
     }},
-    ADDI: {opcode: 0x21, instruction: (value, registerAddress, registers) => {
-        value = registers.read16(registerAddress) + value;
+    ADDI: {opcode: 0x21, instruction: (value, registerAddress, registerResolver) => {
+        value = registerResolver[registerAddress].read() + value;
         // TODO Set flags
-        registers.write16(registerAddress, value);
+        registerResolver[registerAddress].write(value);
     }},
-    SUB: {opcode: 0x22, instruction: (firstRegisterAddress, secondRegisterAddress, outRegisterAddress, registers) => {
-        const firstValue = registers.read16(firstRegisterAddress);
-        const secondValue = registers.read16(secondRegisterAddress);
+    SUB: {opcode: 0x22, instruction: (firstRegisterAddress, secondRegisterAddress, outRegisterAddress, registerResolver) => {
+        const firstValue = registerResolver[firstRegisterAddress].read();
+        const secondValue = registerResolver[secondRegisterAddress].read();
         // TODO Set flags
-        registers.write16(outRegisterAddress, firstValue - secondValue);
+        registerResolver[outRegisterAddress].write(firstValue - secondValue);
     }},
-    SUBI: {opcode: 0x23, instruction: (value, registerAddress, registers) => {
-        value = registers.read16(registerAddress) - value;
+    SUBI: {opcode: 0x23, instruction: (value, registerAddress, registerResolver) => {
+        value = registerResolver[registerAddress].read() - value;
         // TODO Set flags
-        registers.write16(registerAddress, value);
+        registerResolver[registerAddress].write(value);
     }},
-    INC: {opcode: 0x24, instruction: (registerAddress, registers) => {
-        const value = registers.read16(registerAddress) + 1;
+    INC: {opcode: 0x24, instruction: (registerAddress, registerResolver) => {
+        const value = registerResolver[registerAddress].read() + 1;
         // TODO Set flags
-        registers.write16(registerAddress, value);
+        registerResolver[registerAddress].write(value);
     }},
-    DEC: {opcode: 0x25, instruction: (registerAddress, registers) => {
-        const value = registers.read16(registerAddress) - 1;
+    DEC: {opcode: 0x25, instruction: (registerAddress, registerResolver) => {
+        const value = registerResolver[registerAddress].read() - 1;
         // TODO Set flags
-        registers.write16(registerAddress, value);
+        registerResolver[registerAddress].write(value);
     }},
 
     AND: {opcode: 0x30, instruction: () => {}},

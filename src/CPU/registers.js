@@ -1,78 +1,65 @@
 import assert from "assert";
-import { Memory } from "../memory/memory.js";
 
-// 16 bytes
-const registerSizes = {
-    PC: 0x02,
-    SP: 0x01,
-    FP: 0x01,
+const registers = ["PC", "SP", "FP", "R0", "R1", "R2", "R3", "R4", "R5"];
+const resolvableRegisters = ["R0", "R1", "R2", "R3", "R4", "R5"];
+export const REGISTER = registers.reduce((acc, key) => Object.assign(acc, {[key]: key}), {});
 
-    R0: 0x02,
-    R1: 0x02,
-    R2: 0x02,
-    R3: 0x02,
-    R4: 0x02,
-    R5: 0x02,
-};
-
-const {offsets, size, runningSize: totalSize, indices: REGISTER} = Object.keys(registerSizes)
-    .reduce((acc, key, i) => {
-        return {
-            runningSize: acc.runningSize + registerSizes[key],
-            offsets: acc.offsets.concat([acc.runningSize]),
-            size: acc.size.concat([registerSizes[key]]),
-            indices: Object.assign(acc.indices, {[key]: i})
-        };
-    }, {offsets: [], size: [], runningSize: 0, indices: {}});
-
-export function RegistersBuilder() {
-    this.startAddress = 0x00;
-}
-Object.assign(RegistersBuilder.prototype, {
-    setMemory: function (memory) {
-        this.memory = memory;
-        return this;
-    },
-    setStartAddress: function (address) {
-        this.startAddress = address;
-        return this;
-    },
-    build: function () {
-        if (!this.memory) this.memory = new Memory(totalSize + this.startAddress);
-        return new Registers(this.memory, this.startAddress);
-    }
-});
-
-export function Registers(memory, address) {
-    assert(memory.size >= totalSize + address, `Memory too small to hold registers, requires ${totalSize} bytes, but only has ${memory.size - address} bytes left`);
+export function RegistersFactory(memory, addressResolver) {
     this.memory = memory;
-    this.startAddress = address;
-    this.readMethods = [null, this.memory.read8.bind(this.memory), this.memory.read16.bind(this.memory)];
-    this.writeMethods = [null, this.memory.write8.bind(this.memory), this.memory.write16.bind(this.memory)];
+    this.addressBuilder = addressResolver;
+    this.registers = {};
+    this.registerResolver = [];
+    this.size = 0;
 }
-Object.assign(Registers.prototype, {
-    blankGeneralRegisters: function () {
-        this.writeRegister(REGISTER.R0, 0x00);
-        this.writeRegister(REGISTER.R1, 0x00);
-        this.writeRegister(REGISTER.R2, 0x00);
-        this.writeRegister(REGISTER.R3, 0x00);
-        this.writeRegister(REGISTER.R4, 0x00);
-        this.writeRegister(REGISTER.R5, 0x00);
+Object.assign(RegistersFactory.prototype, {
+    addRegister: function (size, name) {
+        assert(registers.includes(name), `Invalid register name: ${name}`);
+        assert(name, "Name not set");
+        assert(size == 1 || size == 2, "Size must be 1 or 2 bytes");
+
+        const address = this.addressBuilder.reserveAddress(size, `register ${name}`);
+        this.size += size;
+        this.registers[name] = this.size === 1
+            ? new ByteRegister(this.memory, address, this.name)
+            : new WordRegister(this.memory, address, this.name);
+        if (resolvableRegisters.includes(name)) this.registerResolver.push(this.registers[name]);
+        return this;
     },
-    readRegister: function (register) {
-        // console.log(`Read register: Reading from ${register}`);
-        return this.readMethods[size[register]](this.startAddress + offsets[register]);
+    finalize: function (expectedSize) {
+        assert(this.size === expectedSize, `Expected ${expectedSize} bytes, but only have ${this.size} bytes`);
+        return {registers: this.registers, resolver: this.registerResolver};
+    }
+})
+
+function BaseRegister(memory, address, name) {
+    assert(memory.size >= address + 1, `Memory too small to hold register, requires ${address + 1} bytes, but only has ${memory.size - address} bytes left`);
+    this.memory = memory;
+    this.address = address;
+    this.name = name;
+}
+
+export function ByteRegister(memory, address, name) {BaseRegister.call(this, memory, address, name);}
+Object.assign(ByteRegister.prototype, {
+    read: function () {
+        return this.memory.read8(this.address);
     },
-    writeRegister: function (register, value) {
-        // console.log(`Write register: Writing 0x${value.toString(16).padStart(4, "0")} to ${register}`);
-        this.writeMethods[size[register]](this.startAddress + offsets[register], value);
+    write: function (value) {
+        this.memory.write8(this.address, value);
     },
-    dumpRegisters: function () {
-        const dump = Object.keys(REGISTER)
-            .map(key => `${key}: 0x${this.readRegister(REGISTER[key]).toString(16).padStart(4, "0")}`)
-            .join(" ");
-        return `Registers -> ${dump}`;
+    dump: function () {
+        return `${this.name}: 0x${this.read().toString(16).padStart(2, "0")}`;
     }
 });
 
-export { REGISTER, totalSize as REGISTER_SIZE };
+export function WordRegister(memory, address, name) {BaseRegister.call(this, memory, address, name);}
+Object.assign(WordRegister.prototype, {
+    read: function () {
+        return this.memory.read16(this.address);
+    },
+    write: function (value) {
+        this.memory.write16(this.address, value);
+    },
+    dump: function () {
+        return `${this.name}: 0x${this.read().toString(16).padStart(4, "0")}`;
+    }
+});

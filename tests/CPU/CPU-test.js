@@ -1,31 +1,47 @@
 import assert from "assert";
 import { it } from "../it.js";
 
-import { CPUBuilder, PAGE_SIZE } from "../../src/CPU/CPU.js";
+import { CPUBuilder } from "../../src/CPU/CPU.js";
 import { Memory } from "../../src/memory/memory.js";
-import { OPCODES } from "../../src/CPU/instructions.js";
-import { REGISTER } from "../../src/CPU/registers.js";
 
 function buildCPU() {
-    return new CPUBuilder().setMemorySize(PAGE_SIZE * 3).setStackSize(PAGE_SIZE).build();
+    return new CPUBuilder()
+        .setPageSize(0x20)
+        .setMemoryPages(3)
+        .setStackPages(1)
+        .build();
 }
 
 console.log("CPU");
-it("can write 8-bit values to registers", () => {
+it("has valid initial state", () => {
     const cpu = buildCPU();
-    cpu.registers.writeRegister(REGISTER.R0, 0x12);
-    assert.strictEqual(cpu.registers.readRegister(REGISTER.R0), 0x12);
+    assert.strictEqual(cpu.pcRegister.read(), cpu.programAddressStart);
 })
 
-it("executes program in memory", () => {
-    const memory = new Memory(0x03);
-    memory.write8(0x00, OPCODES.LOAD_LIT_REG); // Literal value
-    memory.write8(0x01, 0x12); // Literal value
-    memory.write8(0x02, REGISTER.R0); // Register address
+it("resets the program counter when loading memory", () => {
+    const cpu = buildCPU();
+    cpu.loadProgram(new Memory(0x01));
+    assert.strictEqual(cpu.pcRegister.read(), cpu.programAddressStart);
+})
 
-    const cpu = buildCPU(memory);
+it("loads the program into memory at the correct address", () => {
+    const cpu = buildCPU();
+    const memory = new Memory(0x02);
+    memory.write16(0x00, 0x1234);
     cpu.loadProgram(memory);
-    cpu.execute();
+    assert.strictEqual(cpu.memory.read16(cpu.pcRegister.read()), 0x1234);
+})
 
-    assert.strictEqual(cpu.registers.readRegister(REGISTER.R0), 0x12);
+it("increments the program counter on fetch", () => {
+    const cpu = buildCPU();
+    cpu.loadProgram(new Memory(0x01));
+    cpu.fetch();
+    assert.strictEqual(cpu.pcRegister.read(), cpu.programAddressStart + 1);
+})
+
+it("increments the program counter twice on fetch16", () => {
+    const cpu = buildCPU();
+    cpu.loadProgram(new Memory(0x02));
+    cpu.fetch16();
+    assert.strictEqual(cpu.pcRegister.read(), cpu.programAddressStart + 2);
 })
