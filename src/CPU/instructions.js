@@ -1,17 +1,17 @@
 const data = {
     LOAD_MEM_REG: {opcode: 0x10, instruction: (memoryAddress, registerAddress, memory, registers) => {
         const value = memory.read8(memoryAddress);
-        registers.write8(registerAddress, value);
+        registers.writeRegister(registerAddress, value);
     }},
     LOAD_LIT_REG: {opcode: 0x11, instruction: (value, registerAddress, registers) => {
-        registers.write8(registerAddress, value);
+        registers.writeRegister(registerAddress, value);
     }},
     LOAD_REG_REG: {opcode: 0x12, instruction: (sourceRegisterAddress, destRegisterAddress, registers) => {
-        const value = registers.read8(sourceRegisterAddress);
-        registers.write8(destRegisterAddress, value);
+        const value = registers.readRegister(sourceRegisterAddress);
+        registers.writeRegister(destRegisterAddress, value);
     }},
-    LOAD_REG_MEM: {opcode: 0x13, instruction: (memoryAddress, registerAddress, memory, registers) => {
-        const value = registers.read8(registerAddress);
+    LOAD_REG_MEM: {opcode: 0x13, instruction: (registerAddress, memoryAddress, memory, registers) => {
+        const value = registers.readRegister(registerAddress);
         memory.write8(memoryAddress, value);
     }},
     LOAD_LIT_MEM: {opcode: 0x14, instruction: (value, memoryAddress, memory) => {
@@ -23,17 +23,17 @@ const data = {
     }},
     LOADW_MEM_REG: {opcode: 0x16, instruction: (memoryAddress, registerAddress, memory, registers) => {
         const value = memory.read16(memoryAddress);
-        registers.write16(registerAddress, value);
+        registers.writeRegister(registerAddress, value);
     }},
     LOADW_LIT_REG: {opcode: 0x17, instruction: (value, registerAddress, registers) => {
-        registers.write16(registerAddress, value);
+        registers.writeRegister(registerAddress, value);
     }},
     LOADW_REG_REG: {opcode: 0x18, instruction: (sourceRegisterAddress, destRegisterAddress, registers) => {
-        const value = registers.read16(sourceRegisterAddress);
-        registers.write16(destRegisterAddress, value);
+        const value = registers.readRegister(sourceRegisterAddress);
+        registers.writeRegister(destRegisterAddress, value);
     }},
-    LOADW_REG_MEM: {opcode: 0x19, instruction: (memoryAddress, registerAddress, memory, registers) => {
-        const value = registers.read16(registerAddress);
+    LOADW_REG_MEM: {opcode: 0x19, instruction: (registerAddress, memoryAddress, memory, registers) => {
+        const value = registers.readRegister(registerAddress);
         memory.write16(memoryAddress, value);
     }},
     LOADW_LIT_MEM: {opcode: 0x1a, instruction: (value, memoryAddress, memory) => {
@@ -115,5 +115,5 @@ const data = {
     CLR_FLAG: {opcode: 0x04, instruction: () => {}},
 };
 
-export const opcodes = Object.keys(data).reduce((acc, key) => Object.assign(acc, {[key]: data[key].opcode}), {});
+export const OPCODES = Object.keys(data).reduce((acc, key) => Object.assign(acc, {[key]: data[key].opcode}), {});
 export const instructions = Object.keys(data).reduce((acc, key) => Object.assign(acc, {[data[key].opcode]: data[key].instruction}), {});

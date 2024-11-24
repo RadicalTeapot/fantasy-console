@@ -8,7 +8,7 @@ it("throws if memory size is out of bounds", () => {
         new Memory(0);
     });
     assert.throws(() => {
-        new Memory(0x10000);
+        new Memory(0x10001);
     });
 })
 

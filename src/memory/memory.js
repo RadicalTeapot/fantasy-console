@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 export function Memory(size) {
-    assert(size > 0 && size <= 0xffff, `Memory size must be between 0 and 0xffff: ${size}`);
+    assert(size > 0 && size <= 0x10000, `Memory size must be between 0 and 0x10000: ${size}`);
     this.size = size;
     this.memory = new ArrayBuffer(this.size);
     this.view = new DataView(this.memory);

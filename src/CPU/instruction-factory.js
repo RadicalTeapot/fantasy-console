@@ -1,5 +1,5 @@
 import assert from "assert";
-import { opcodes } from "./instructions.js";
+import { OPCODES } from "./instructions.js";
 
 export function InstructionFactory(memory, registers, instructions) {
     this.memory = memory;
@@ -10,26 +10,26 @@ Object.assign(InstructionFactory.prototype, {
     createInstruction: function(opcode, instructionArgs) {
         assert(opcode in this.instructions, `No instruction for opcode: 0x${opcode.toString(16).padStart(2, "0")}`);
         switch (opcode) {
-            case opcodes.LOAD_MEM_REG:
-            case opcodes.LOAD_REG_MEM:
-            case opcodes.LOADW_MEM_REG:
-            case opcodes.LOADW_REG_MEM:
+            case OPCODES.LOAD_MEM_REG:
+            case OPCODES.LOAD_REG_MEM:
+            case OPCODES.LOADW_MEM_REG:
+            case OPCODES.LOADW_REG_MEM:
                 instructionArgs.push(this.memory, this.registers);
                 break;
-            case opcodes.LOAD_LIT_REG:
-            case opcodes.LOAD_REG_REG:
-            case opcodes.LOADW_REG_REG:
-            case opcodes.LOADW_LIT_REG:
+            case OPCODES.LOAD_LIT_REG:
+            case OPCODES.LOAD_REG_REG:
+            case OPCODES.LOADW_REG_REG:
+            case OPCODES.LOADW_LIT_REG:
                 instructionArgs.push(this.registers);
                 break;
-            case opcodes.LOAD_LIT_MEM:
-            case opcodes.LOAD_MEM_MEM:
-            case opcodes.LOADW_MEM_MEM:
-            case opcodes.LOADW_LIT_MEM:
+            case OPCODES.LOAD_LIT_MEM:
+            case OPCODES.LOAD_MEM_MEM:
+            case OPCODES.LOADW_MEM_MEM:
+            case OPCODES.LOADW_LIT_MEM:
                 instructionArgs.push(this.memory);
                 break;
             default:
-                opcode = opcodes.NOP;
+                opcode = OPCODES.NOP;
                 instructionArgs = [];
                 break;
         }

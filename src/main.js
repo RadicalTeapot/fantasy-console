@@ -1,4 +1,6 @@
-import { instructions } from "./CPU/instructions.js";
+import { CPUBuilder } from "./CPU/CPU.js";
 
-console.log(instructions);
-console.log("Hello world");
+const cpu = new CPUBuilder()
+    .setMemorySize(0x1000)
+    .setStackSize(0x100)
+    .build();
