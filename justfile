@@ -29,4 +29,8 @@ test-instruction-factory:
     node tests/CPU/instruction-factory-test.js
     echo ""
 
-test-all: test-CPU test-memory test-instructions test-instruction-factory
+test-stack:
+    node tests/memory/stack-test.js
+    echo ""
+
+test-all: test-CPU test-memory test-instructions test-instruction-factory test-stack
