@@ -28,6 +28,14 @@ Object.assign(InstructionFactory.prototype, {
             case OPCODES.LOADW_LIT_MEM:
                 instructionArgs.push(this.memory);
                 break;
+            case OPCODES.CALL:
+                {
+                    const index = instructionArgs.length - 1;
+                    const stackFrameBuilder = instructionArgs[index];
+                    this.registerResolver.map(r => stackFrameBuilder.setRegister(this.registerResolver[r].read()));
+                    instructionArgs[index] = stackFrameBuilder.build();
+                }
+                break;
             default:
                 opcode = OPCODES.NOP;
                 instructionArgs = [];

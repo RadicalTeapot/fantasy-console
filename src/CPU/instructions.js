@@ -102,7 +102,9 @@ const data = {
 
     PUSH: {opcode: 0x60, instruction: () => {}},
     POP: {opcode: 0x61, instruction: () => {}},
-    CALL: {opcode: 0x62, instruction: () => {}},
+    CALL: {opcode: 0x62, instruction: (jumpAddress, stack, stackFrame) => {
+        stack.push(stackFrame);
+    }},
     RET: {opcode: 0x63, instruction: () => {}},
 
     IN: {opcode: 0x70, instruction: () => {}},

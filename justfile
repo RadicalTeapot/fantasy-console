@@ -33,4 +33,8 @@ test-stack:
     node tests/memory/stack-test.js
     echo ""
 
-test-all: test-CPU test-memory test-instructions test-instruction-factory test-stack
+test-stack-frame:
+    node tests/memory/stack-frame-test.js
+    echo ""
+
+test-all: test-CPU test-memory test-instructions test-instruction-factory test-stack test-stack-frame

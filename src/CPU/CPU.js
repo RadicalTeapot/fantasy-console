@@ -5,6 +5,7 @@ import { Stack } from "../memory/stack.js";
 import { Memory } from "../memory/memory.js";
 import { OPCODES, instructions } from "./instructions.js";
 import { InstructionFactory } from "./instruction-factory.js";
+import { StackFrameBuilder } from "../memory/stack-frame.js";
 
 export function CPUBuilder() {
     this.pageSize = 0x100;
@@ -110,6 +111,17 @@ CPU.prototype.getNextInstruction = function(opcode) {
         case OPCODES.LOADW_LIT_MEM:
         case OPCODES.LOADW_LIT_REG:
             instructionArgs = [this.fetch16(), this.fetch()];
+            break;
+        case OPCODES.CALL:
+            {
+                const jumpAddress = this.fetch16();
+                const argumentCount = this.fetch();
+                const stackFrameBuilder = new StackFrameBuilder().setPC(this.pcRegister.read());
+                for (let i = 0; i < argumentCount; i++)
+                    stackFrameBuilder.setFunctionArgument(this.fetch16());
+                instructionArgs = [jumpAddress, this.stack, stackFrameBuilder];
+                this.pcRegister.write(jumpAddress);
+            }
             break;
         default:
             opcode = OPCODES.NOP;
